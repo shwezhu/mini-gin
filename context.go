@@ -47,30 +47,29 @@ func (c *Context) SetHeader(key string, value string) {
 	c.Writer.Header().Set(key, value)
 }
 
-func (c *Context) String(code int, format string, values ...interface{}) {
+// Returns an error if the write fails, the reason could be the following:
+// 1. The connection is closed by the client
+// 2. If content length was specified, and you attempt to write more than that: http.ErrContentLength
+// Learn more: https://stackoverflow.com/a/43976633/16317008
+func (c *Context) String(code int, format string, values ...interface{}) error {
 	c.SetHeader("Content-Type", "text/plain")
 	c.Status(code)
 	_, err := c.Writer.Write([]byte(fmt.Sprintf(format, values...)))
-	if err != nil {
-		http.Error(c.Writer, err.Error(), 500)
-	}
+	// If err!=nil, http.Error(c.Writer, err.Error(), 500)是不起作用的
+	return err
 }
 
-func (c *Context) JSON(code int, obj interface{}) {
+func (c *Context) JSON(code int, obj interface{}) error {
 	c.SetHeader("Content-Type", "application/json")
 	c.Status(code)
 	encoder := json.NewEncoder(c.Writer)
-	if err := encoder.Encode(obj); err != nil {
-		http.Error(c.Writer, err.Error(), 500)
-	}
+	return encoder.Encode(obj)
 }
 
-func (c *Context) Data(code int, data []byte) {
+func (c *Context) Data(code int, data []byte) error {
 	c.Status(code)
 	_, err := c.Writer.Write(data)
-	if err != nil {
-		http.Error(c.Writer, err.Error(), 500)
-	}
+	return err
 }
 
 func (c *Context) HTML(code int, html string) {
