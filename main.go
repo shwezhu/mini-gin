@@ -5,7 +5,7 @@ import (
 )
 
 func hello(c *Context) {
-	c.String(http.StatusOK, "PostForm:%s, Query:%s\n", c.PostForm("name"), c.Query("name"))
+	_ = c.String(http.StatusOK, "PostForm:%s, Query:%s\n", c.PostForm("name"), c.Query("name"))
 }
 
 func main() {

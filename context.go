@@ -50,12 +50,14 @@ func (c *Context) SetHeader(key string, value string) {
 // Returns an error if the write fails, the reason could be the following:
 // 1. The connection is closed by the client
 // 2. If content length was specified, and you attempt to write more than that: http.ErrContentLength
+// 3...
+// Suggestions: You can log the error, or ignore it.
 // Learn more: https://stackoverflow.com/a/43976633/16317008
 func (c *Context) String(code int, format string, values ...interface{}) error {
 	c.SetHeader("Content-Type", "text/plain")
 	c.Status(code)
 	_, err := c.Writer.Write([]byte(fmt.Sprintf(format, values...)))
-	// If err!=nil, http.Error(c.Writer, err.Error(), 500)是不起作用的
+	// If err!=nil, http.Error(c.Writer, err.Error(), 500) won't work
 	return err
 }
 
