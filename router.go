@@ -5,22 +5,22 @@ import (
 	"strings"
 )
 
-// Router
+// router
 // roots key eg, roots['GET'] roots['POST']
 // handlers key eg, handlers['GET-/p/:lang/doc'], handlers['POST-/p/book']
-type Router struct {
+type router struct {
 	roots    map[string]*node
 	handlers map[string]HandlerFunc
 }
 
-func NewRouter() *Router {
-	return &Router{
+func newRouter() *router {
+	return &router{
 		roots:    make(map[string]*node),
 		handlers: make(map[string]HandlerFunc),
 	}
 }
 
-func (r *Router) addRoute(method string, pattern string, handler HandlerFunc) {
+func (r *router) addRoute(method string, pattern string, handler HandlerFunc) {
 	r.handlers[method+"-"+pattern] = handler
 
 	// root 的子节点为 GET, POST 等
@@ -33,7 +33,7 @@ func (r *Router) addRoute(method string, pattern string, handler HandlerFunc) {
 	r.roots[method].insertChild(pattern, parts, 0)
 }
 
-func (r *Router) getRoute(method string, path string) (*node, map[string]string) {
+func (r *router) getRoute(method string, path string) (*node, map[string]string) {
 	root, ok := r.roots[method]
 	if !ok {
 		return nil, nil
@@ -61,7 +61,7 @@ func (r *Router) getRoute(method string, path string) (*node, map[string]string)
 	return nil, nil
 }
 
-func (r *Router) handle(c *Context) {
+func (r *router) handle(c *Context) {
 	nod, params := r.getRoute(c.Method, c.Path)
 	if nod != nil {
 		c.Params = params
