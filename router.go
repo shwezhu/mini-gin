@@ -79,9 +79,11 @@ func parsePattern(pattern string) []string {
 	parts := make([]string, 0)
 
 	for _, item := range items {
-		parts = append(parts, item)
-		if item[0] == '*' {
-			break
+		if item != "" {
+			parts = append(parts, item)
+			if item[0] == '*' {
+				break
+			}
 		}
 	}
 
