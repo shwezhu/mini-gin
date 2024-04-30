@@ -71,6 +71,9 @@ func (n *node) matchPattern(parts []string, depth int) *node {
 	}
 
 	part := parts[depth]
+	// 这里可能会匹配多个节点, 主要是因为节点树的某个节点的值为 :
+	// 比如前缀树为 /a/:id/chat, /a/:name/doc, /a/api/v2,  此时我们的路径为 /a/api/v2
+	// 那就会匹配到 /a/:id, /a/:name, /a/api, 三个节点, 然后继续递归匹配到 /a/api/v2 而不是前两个
 	children := n.searchChildren(part)
 	for _, child := range children {
 		result := child.matchPattern(parts, depth+1)
