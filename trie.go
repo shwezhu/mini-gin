@@ -9,7 +9,7 @@ type node struct {
 	isWild   bool // part 是否含有 : 或 *
 }
 
-func (n *node) findChild(part string) *node {
+func (n *node) searchChild(part string) *node {
 	for _, child := range n.children {
 		if child.part == part {
 			return child
@@ -18,7 +18,7 @@ func (n *node) findChild(part string) *node {
 	return nil
 }
 
-func (n *node) findChildren(part string) []*node {
+func (n *node) searchChildren(part string) []*node {
 	nodes := make([]*node, 0)
 	for _, child := range n.children {
 		if child.part == part || child.isWild {
@@ -42,7 +42,7 @@ func (n *node) insertChild(pattern string, parts []string, depth int) {
 	// 递归插入, a, b, 已经存在 所以不需要创建新的节点
 	// r 不存在, 需要创建新的节点, c, d, r 都都有相同的前缀 a -> b, 这就是前缀树
 	part := parts[depth]
-	child := n.findChild(part)
+	child := n.searchChild(part)
 	if child == nil {
 		child = &node{part: part, isWild: part[0] == ':' || part[0] == '*'}
 		n.children = append(n.children, child)
@@ -56,7 +56,7 @@ func (n *node) insertChild(pattern string, parts []string, depth int) {
 
 // 插入节点的时候 只有叶子节点的 pattern 不为空
 // 此函数的本质就是去搜索所有叶子节点的 pattern, 别忘了 parts 就是 pattern 拆出来的数组
-func (n *node) searchNode(parts []string, depth int) *node {
+func (n *node) matchPattern(parts []string, depth int) *node {
 	// ‘*’ 只会出现在 pattern 的最后, 即 /api/chat/v1/*
 	// 代表含有 /api/chat/v1/ 前缀的 pattern, 都会匹配到此 pattern
 	if len(parts) == depth || strings.HasPrefix(n.part, "*") {
@@ -71,9 +71,9 @@ func (n *node) searchNode(parts []string, depth int) *node {
 	}
 
 	part := parts[depth]
-	children := n.findChildren(part)
+	children := n.searchChildren(part)
 	for _, child := range children {
-		result := child.searchNode(parts, depth+1)
+		result := child.matchPattern(parts, depth+1)
 		// 已经找到 pattern, 直接返回
 		if result != nil {
 			return result

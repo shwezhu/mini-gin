@@ -41,7 +41,7 @@ func (r *router) getRoute(method string, path string) (*node, map[string]string)
 
 	params := make(map[string]string)
 	itemsOfPath := parsePattern(path)
-	nod := root.searchNode(itemsOfPath, 0)
+	nod := root.matchPattern(itemsOfPath, 0)
 	if nod != nil {
 		itemsOfPattern := parsePattern(nod.pattern)
 		// 理解这段代码 需要知道动态 url 是怎么用的, 可参考 gin
