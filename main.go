@@ -1,20 +1,34 @@
 package main
 
 import (
-	"net/http"
+	"log"
 )
 
-func hello(c *Context) {
-	// _ = c.SendString(http.StatusOK, "PostForm:%s, Query:%s\n", c.PostForm("name"), c.Query("name"))
-	c.SendFile("mini-gin.go")
+func onlyForV2() HandlerFunc {
+	return func(c *Context) {
+		log.Println("onlyForV2...")
+	}
+}
+
+func onlyForV22() HandlerFunc {
+	return func(c *Context) {
+		log.Println("onlyForV22...")
+	}
 }
 
 func main() {
 	mini := New()
-	mini.GET("/hello", hello)
+	v2 := mini.Group("/v2")
+	v2.Use(onlyForV2(), onlyForV22()) // v2 group middleware
 
-	err := http.ListenAndServe(":8080", mini)
-	if err != nil {
-		panic(err)
+	{
+		v2.GET("/hello/:name", func(c *Context) {
+			log.Println("/hello/", c.Param("name"))
+		})
+		v2.GET("/chat", func(c *Context) {
+			log.Println("/chat")
+		})
 	}
+
+	mini.Run(":8080")
 }

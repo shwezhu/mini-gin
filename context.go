@@ -21,14 +21,28 @@ type Context struct {
 	StatusCode int
 	// dynamic url parameters
 	Params map[string]string
+
+	// middleware
+	handlers []HandlerFunc
+	index    int
 }
 
 func newContext(w http.ResponseWriter, r *http.Request) *Context {
 	return &Context{
-		Writer: w,
-		Req:    r,
-		Path:   r.URL.Path,
-		Method: r.Method,
+		Writer:   w,
+		Req:      r,
+		Path:     r.URL.Path,
+		Method:   r.Method,
+		handlers: nil,
+		index:    -1,
+	}
+}
+
+func (c *Context) Next() {
+	c.index++
+	s := len(c.handlers)
+	for ; c.index < s; c.index++ {
+		c.handlers[c.index](c)
 	}
 }
 

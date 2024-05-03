@@ -70,6 +70,7 @@ func (r *router) handle(c *Context) {
 	} else {
 		http.Error(c.Writer, "404 Not Found", http.StatusNotFound)
 	}
+	c.Next()
 }
 
 // Only one * is allowed

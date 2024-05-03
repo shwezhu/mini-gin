@@ -1,15 +1,31 @@
 package main
 
-import "net/http"
+import (
+	"net/http"
+	"strings"
+)
 
 type HandlerFunc func(*Context)
 
+type HandlersChain []HandlerFunc
+
 type Engine struct {
+	*RouterGroup
 	router *router
+	// use a slice to store all groups
+	groups []*RouterGroup
 }
 
 func New() *Engine {
-	return &Engine{router: newRouter()}
+	engine := &Engine{
+		router: newRouter(),
+		RouterGroup: &RouterGroup{
+			basePath: "/",
+		},
+	}
+	engine.RouterGroup.engine = engine
+	engine.groups = []*RouterGroup{engine.RouterGroup}
+	return engine
 }
 
 func (e *Engine) addRoute(method string, pattern string, handler HandlerFunc) {
@@ -29,6 +45,13 @@ func (e *Engine) Run(addr string) error {
 }
 
 func (e *Engine) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	var middlewares []HandlerFunc
+	for _, group := range e.groups {
+		if strings.HasPrefix(r.URL.Path, group.basePath) {
+			middlewares = append(middlewares, group.Handlers...)
+		}
+	}
 	c := newContext(w, r)
+	c.handlers = middlewares
 	e.router.handle(c)
 }
